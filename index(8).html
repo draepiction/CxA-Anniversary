@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petrichor: For Clara</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=La+Belle+Aurore&display=swap');
+
+        :root {
+            --book-height: 440px;
+            --book-width: 320px;
+            --speed: 0.9s;
+            --paper-texture: url('https://images.unsplash.com/photo-1637325258040-d2f09636ecf6?fm=jpg&q=60&w=3000&auto=format&fit=crop');
+            --cover-texture: url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            --desk-texture: url('https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?fm=jpg&q=60&w=3000&auto=format&fit=crop');
+            --paper-base: #fdfaf0;
+            --cover-base: #354230; 
+            --cover-accent: #b89166;
+            --page-text: #3d342d;
+            --firefly-glow: rgba(255, 200, 50, 0.9);
+            --inner-fold-shadow: inset -12px 0 25px rgba(0,0,0,0.18), inset 12px 0 25px rgba(0,0,0,0.12);
+        }
+
+        body {
+            background-color: #241a15;
+            background-image: radial-gradient(circle, rgba(40,30,20,0.1) 0%, rgba(20,10,5,0.7) 100%), var(--desk-texture);
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; overflow: hidden;
+            font-family: 'EB Garamond', serif;
+        }
+
+        /* --- MAGIC: RAIN RIPPLES --- */
+        .ripple {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple-out 3s ease-out forwards;
+            z-index: 1002;
+        }
+        @keyframes ripple-out {
+            0% { transform: scale(0); opacity: 0.5; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        /* --- MAGIC: DUST MOTES --- */
+        .dust {
+            position: fixed;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 3s ease;
+        }
+        .dust.visible { opacity: 0.15; }
+        @keyframes drift {
+            from { transform: translateY(110vh) translateX(0); }
+            to { transform: translateY(-10vh) translateX(100px); }
+        }
+
+        /* --- FOGGY WINDOW ENTRANCE --- */
+        #rain-entrance {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 12, 0.65); 
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; cursor: pointer;
+            transition: opacity 3s ease-in-out, visibility 3s;
+        }
+        #rain-entrance.faded { opacity: 0; visibility: hidden; }
+        
+        .rain-text {
+            color: var(--cover-accent);
+            font-family: 'Playfair Display', serif;
+            font-style: italic; font-size: 1.8rem; letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(184, 145, 102, 0.4);
+            animation: pulse-text 4s infinite ease-in-out;
+            z-index: 1005;
+        }
+        @keyframes pulse-text { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* --- FIREFLIES --- */
+        .firefly-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 100; }
+        .firefly-system { position: absolute; animation: drift-large var(--d-speed) ease-in-out infinite alternate; }
+        .firefly-wrapper { position: absolute; animation: drift-weave var(--w-speed) ease-in-out infinite alternate; animation-delay: var(--delay); }
+        .firefly { width: 6px; height: 6px; background-color: #fff; border-radius: 50%; filter: blur(2px); box-shadow: 0 0 20px 10px var(--firefly-glow); animation: breathe var(--b-speed) ease-in-out infinite alternate; animation-delay: var(--delay); }
+
+        @keyframes drift-large { 0% { transform: translate(0, 0); } 100% { transform: translate(var(--x-dist), var(--y-dist)); } }
+        @keyframes drift-weave { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, -30px); } }
+        @keyframes breathe { 0% { opacity: 0.2; transform: scale(0.6); } 100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 30px 15px var(--firefly-glow); } }
+
+        /* --- BOOK STRUCTURE --- */
+        .scene { perspective: 2500px; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; z-index: 10; }
+        .book { 
+            position: relative; width: var(--book-width); height: var(--book-height); 
+            transition: transform var(--speed) cubic-bezier(0.645, 0.045, 0.355, 1); 
+            transform-style: preserve-3d; transform: rotateZ(-4deg); 
+            filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)); 
+        }
+        .book.open { transform: translateX(50%) rotateZ(0deg); }
+        .book.fully-closed-back { transform: translateX(-25%) rotateZ(2deg); }
+
+        .page { position: absolute; width: 100%; height: 100%; top: 0; left: 0; transform-origin: left; transform-style: preserve-3d; transition: transform var(--speed) cubic-bezier(0.645, 0.045, 0.355, 1); cursor: pointer; }
+        .front, .back { 
+            position: absolute; width: 100%; height: 100%; background-color: var(--paper-base); background-image: var(--paper-texture); background-size: cover;
+            backface-visibility: hidden; padding: 35px; box-sizing: border-box; box-shadow: var(--inner-fold-shadow); display: flex; flex-direction: column; color: var(--page-text); border: 1px solid rgba(0,0,0,0.08); 
+        }
+        .front { border-radius: 2px 15px 15px 2px; transform: translateZ(1px); }
+        .back { transform: rotateY(180deg) translateZ(1px); border-radius: 15px 2px 2px 15px; }
+
+        .content-scroll { flex: 1; overflow-y: auto; padding-right: 5px; scrollbar-width: none; }
+        .content-scroll::-webkit-scrollbar { display: none; }
+
+        /* --- TYPOGRAPHY --- */
+        .handwritten { font-family: 'La Belle Aurore', cursive; font-size: 1.15rem; line-height: 1.5; color: #4a5a48; letter-spacing: 0.3px; }
+        .drop-cap::first-letter { font-family: 'Playfair Display', serif; font-size: 3.5rem; float: left; line-height: 0.8; padding-right: 8px; padding-top: 4px; color: #5a6b58; }
+        .divider { text-align: center; margin: 15px 0; font-size: 1.2rem; opacity: 0.4; letter-spacing: 5px; }
+
+        .page.cover .front { background-color: var(--cover-base); background-image: var(--cover-texture); color: var(--cover-accent); border: 8px double var(--cover-accent); justify-content: center; align-items: center; text-align: center; }
+        .cover-ornaments { position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; font-size: 2rem; opacity: 0.5; z-index: 1; backface-visibility: hidden; }
+        .ornament-row { display: flex; justify-content: space-between; width: 100%; }
+        .top-l { transform: rotate(-45deg); } .top-r { transform: rotate(45deg); }
+        .bot-l { transform: rotate(-135deg); } .bot-r { transform: rotate(135deg); }
+
+        .endpaper { background-color: #d1c7b1 !important; filter: sepia(0.2) contrast(1.1); }
+        .page.flipped { transform: rotateY(-180deg); }
+
+        h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-style: italic; margin: 0; line-height: 1.2; z-index: 2; }
+        h2 { font-family: 'Playfair Display', serif; border-bottom: 1px solid rgba(0,0,0,0.15); font-style: italic; font-size: 1.2rem; margin-top: 0; margin-bottom: 12px; }
+        h3 { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; color: #5a6b58; margin-bottom: 8px; }
+        p { line-height: 1.5; font-size: 0.85rem; margin-bottom: 12px; text-align: justify; }
+        .page-footer { margin-top: 10px; text-align: center; font-size: 0.7rem; font-style: italic; opacity: 0.6; font-weight: bold; }
+
+        .desk-reveal { position: absolute; right: 20%; top: 50%; transform: translateY(-50%); text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; z-index: 1; }
+        .book.fully-closed-back + .desk-reveal { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div id="rain-entrance" onclick="startExperience()">
+    <div class="rain-text">A quiet breath, just for you...</div>
+    <p style="color: white; opacity: 0.4; margin-top: 20px; font-size: 0.75rem; letter-spacing: 2px;">( CLICK TO CLEAR THE MIST )</p>
+</div>
+
+<div id="audio-container" style="display:none;"><div id="player"></div></div>
+
+<div class="firefly-overlay">
+    <div class="firefly-system" style="top: 10%; left: 10%; --d-speed: 25s; --x-dist: 15vw; --y-dist: 10vh;"><div class="firefly-wrapper" style="--w-speed: 8s; --delay: -2s;"><div class="firefly" style="--b-speed: 4s; --delay: -1s;"></div></div></div>
+    <div class="firefly-system" style="top: 85%; left: 90%; --d-speed: 18s; --x-dist: -20vw; --y-dist: -15vh;"><div class="firefly-wrapper" style="--w-speed: 6s; --delay: -4s;"><div class="firefly" style="--b-speed: 3s; --delay: -0.5s;"></div></div></div>
+</div>
+
+<div class="scene">
+    <div class="book" id="book">
+        
+        <div class="page cover">
+            <div class="front">
+                <div class="cover-ornaments">
+                    <div class="ornament-row"><span class="top-l">❧</span><span class="top-r">❧</span></div>
+                    <div class="ornament-row"><span class="bot-l">❧</span><span class="bot-r">❧</span></div>
+                </div>
+                <h1>Petrichor:</h1>
+                <p style="color:#d1c7b1; font-style: italic; margin-top: 10px; z-index: 2;">You, Clara Whom I Deem My Rain</p>
+            </div>
+            <div class="back endpaper">
+                <div class="content-scroll" style="justify-content: center; display: flex; flex-direction: column; text-align: center;">
+                    <p style="font-size: 0.9rem; margin-bottom: 15px;"><strong>petrichor</strong> /pe-trə-ˌkȯr/ <br> 
+                    <span style="font-style: italic; opacity: 0.8;">noun</span><br>
+                    The earthy scent produced when rain falls on dry soil; the life-giving arrival of Clara.</p>
+                    <div class="divider">❦ ——— ❦</div>
+                    <p style="font-size: 1.1rem; font-style: italic; margin-top: 25px;">To my Wildwood girl,</p>
+                    <p>My favorite discovery in every lifetime.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="front">
+                <h2>I. Preface</h2>
+                <div class="content-scroll">
+                    <p class="drop-cap handwritten">E</p>
+                    <p class="handwritten">Enter your endearing notes here...</p>
+                </div>
+            </div>
+            <div class="back">
+                <h2>The Registry</h2>
+                <div class="content-scroll">
+                    <p><strong>01</strong> &nbsp; [Memory Title]</p>
+                    <div class="divider">❦</div>
+                    <p><strong>...</strong></p>
+                    <p><strong>12</strong> &nbsp; [Final Memory]</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="page"><div class="front"><h3>01</h3><div class="content-scroll"><p class="handwritten">Memory 1...</p></div><div class="page-footer">01</div></div><div class="back"><h3>02</h3><div class="content-scroll"><p class="handwritten">Memory 2...</p></div><div class="page-footer">02</div></div></div>
+        <div class="page"><div class="front"><h3>03</h3><div class="content-scroll"><p class="handwritten">Memory 3...</p></div><div class="page-footer">03</div></div><div class="back"><h3>04</h3><div class="content-scroll"><p class="handwritten">Memory 4...</p></div><div class="page-footer">04</div></div></div>
+        <div class="page"><div class="front"><h3>05</h3><div class="content-scroll"><p class="handwritten">Memory 5...</p></div><div class="page-footer">05</div></div><div class="back"><h3>06</h3><div class="content-scroll"><p class="handwritten">Memory 6...</p></div><div class="page-footer">06</div></div></div>
+        <div class="page"><div class="front"><h3>07</h3><div class="content-scroll"><p class="handwritten">Memory 7...</p></div><div class="page-footer">07</div></div><div class="back"><h3>08</h3><div class="content-scroll"><p class="handwritten">Memory 8...</p></div><div class="page-footer">08</div></div></div>
+        <div class="page"><div class="front"><h3>09</h3><div class="content-scroll"><p class="handwritten">Memory 9...</p></div><div class="page-footer">09</div></div><div class="back"><h3>10</h3><div class="content-scroll"><p class="handwritten">Memory 10...</p></div><div class="page-footer">10</div></div></div>
+        <div class="page"><div class="front"><h3>11</h3><div class="content-scroll"><p class="handwritten">Memory 11...</p></div><div class="page-footer">11</div></div><div class="back"><h3>12</h3><div class="content-scroll"><p class="handwritten">Memory 12...</p></div><div class="page-footer">12</div></div></div>
+
+        <div class="page">
+            <div class="front">
+                <h2>The End</h2>
+                <div class="content-scroll" style="text-align: center;">
+                    <p style="margin-top: 50px;">A dedicated space for the end of this registry.</p>
+                    <p style="font-size: 1.5rem; opacity: 0.3; margin-top: 20px;">❀</p>
+                </div>
+            </div>
+            <div class="back endpaper">
+                <h2>II. Epilogue</h2>
+                <div class="content-scroll">
+                    <p class="drop-cap handwritten">W</p>
+                    <p class="handwritten">Wait for the moon to be full before you plant the rosemary...</p>
+                    <div class="divider" style="margin-top: 40px;">❧</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="front endpaper"></div>
+            <div class="back" style="background-color: var(--cover-base); border: 8px double var(--cover-accent); background-image: var(--cover-texture);"></div>
+        </div>
+
+    </div>
+    
+    <div class="desk-reveal">
+        <h1 style="color: var(--cover-accent); font-family: 'Playfair Display'; font-size: 3.5rem; font-style: italic;">Happy Anniversary</h1>
+        <p style="color: white; opacity: 0.6; font-style: italic;">To many more lifecycles together.</p>
+    </div>
+</div>
+
+<script>
+    // --- RAIN RIPPLES ---
+    function createRipple() {
+        const entrance = document.getElementById('rain-entrance');
+        if (entrance.classList.contains('faded')) return;
+
+        const ripple = document.createElement('div');
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * window.innerHeight;
+        const size = Math.random() * 50 + 30 + 'px';
+
+        ripple.className = 'ripple';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.style.width = size; ripple.style.height = size;
+        ripple.style.marginLeft = `-${parseInt(size)/2}px`;
+        ripple.style.marginTop = `-${parseInt(size)/2}px`;
+
+        entrance.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 3000);
+    }
+    setInterval(createRipple, 600);
+
+    // --- DUST MOTES ---
+    function initDust() {
+        for(let i=0; i<30; i++) {
+            let d = document.createElement('div');
+            d.className = 'dust';
+            let s = Math.random() * 3 + 1 + 'px';
+            d.style.width = s; d.style.height = s;
+            d.style.left = Math.random() * 100 + 'vw';
+            d.style.animation = `drift ${Math.random()*15 + 10}s linear infinite`;
+            d.style.animationDelay = Math.random() * 15 + 's';
+            document.body.appendChild(d);
+        }
+    }
+
+    // --- YOUTUBE API ---
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '0', width: '0', videoId: 'ptwcZ574blo',
+            playerVars: { 'autoplay': 1, 'loop': 1, 'playlist': 'ptwcZ574blo', 'controls': 0 }
+        });
+    }
+
+    function startExperience() {
+        document.getElementById('rain-entrance').classList.add('faded');
+        if (player) player.playVideo();
+        initDust();
+        setTimeout(() => {
+            document.querySelectorAll('.dust').forEach(d => d.classList.add('visible'));
+        }, 1000);
+    }
+
+    // --- BOOK ANIMATION ---
+    const pages = document.querySelectorAll('.page');
+    const book = document.getElementById('book');
+    pages.forEach((page, index) => {
+        page.style.zIndex = pages.length - index;
+        page.addEventListener('click', () => {
+            if (!page.classList.contains('flipped')) {
+                page.classList.add('flipped');
+                page.style.zIndex = 20 + index;
+                setTimeout(() => { page.style.zIndex = index + 1; }, 850);
+            } else {
+                page.classList.remove('flipped');
+                page.style.zIndex = 20 + index;
+                setTimeout(() => { page.style.zIndex = pages.length - index; }, 850);
+            }
+            
+            setTimeout(() => {
+                const flippedCount = document.querySelectorAll('.flipped').length;
+                if (flippedCount > 0) book.classList.add('open');
+                else book.classList.remove('open');
+                if (flippedCount === pages.length) book.classList.add('fully-closed-back');
+                else book.classList.remove('fully-closed-back');
+            }, 100);
+        });
+    });
+</script>
+
+</body>
+</html>
