@@ -128,7 +128,6 @@
         .top-l { transform: rotate(-45deg); } .top-r { transform: rotate(45deg); }
         .bot-l { transform: rotate(-135deg); } .bot-r { transform: rotate(135deg); }
 
-        /* --- CORNER PROTECTORS --- */
         .corner-protector { position: absolute; width: 55px; height: 55px; z-index: 10; pointer-events: none; filter: contrast(1.1) brightness(1.1); }
         .corner-protector::before {
             content: ''; position: absolute; width: 100%; height: 100%;
@@ -175,15 +174,25 @@
         .divider { text-align: center; margin: 15px 0; font-size: 1.2rem; opacity: 0.4; letter-spacing: 5px; }
         .page-footer { margin-top: 10px; text-align: center; font-size: 0.7rem; font-style: italic; opacity: 0.6; font-weight: bold; }
 
-        .desk-reveal { position: absolute; right: 10%; top: 50%; transform: translateY(-50%); text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; z-index: 1; width: 300px; }
+        /* --- UPDATED ANNIVERSARY TEXT POSITIONING --- */
+        .desk-reveal { 
+            position: absolute; 
+            left: 50%;
+            top: 50%;
+            transform: translate(-30%, -50%); 
+            text-align: center; 
+            pointer-events: none; 
+            opacity: 0; 
+            transition: opacity 1.5s ease; 
+            z-index: 1; 
+            width: 380px; 
+        }
         .book.fully-closed-back + .desk-reveal { opacity: 1; }
         
         #player { position: absolute; width: 0; height: 0; visibility: hidden; pointer-events: none; }
 
-        /* --- MOBILE SPECIFIC OVERRIDES --- */
         @media (max-width: 768px) {
             :root {
-                /* Change aspect ratio for mobile to stop elongation */
                 --book-height: 360px; 
                 --book-width: 240px;
             }
@@ -198,18 +207,16 @@
             h2 { font-size: 1.1rem; }
             .handwritten { font-size: 0.95rem; }
             
-            /* Move anniversary text above the book on small screens */
             .desk-reveal { 
-                right: 50%; 
+                left: 50%; 
                 top: 15%; 
-                transform: translateX(50%); 
+                transform: translateX(-50%); 
                 width: 90%; 
             }
             .desk-reveal h1 { font-size: 2.2rem; }
         }
 
         @media (max-width: 480px) {
-            /* Extra centering for very narrow screens */
             .book.open { transform: translateX(38%) rotateZ(0deg); }
         }
     </style>
