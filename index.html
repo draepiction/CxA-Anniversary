@@ -100,7 +100,7 @@
 
         .front, .back { 
             position: absolute; width: 100%; height: 100%; background-color: var(--paper-base); background-image: var(--paper-texture); background-size: cover;
-            backface-visibility: hidden; padding: 35px; box-sizing: border-box; box-shadow: var(--inner-fold-shadow); display: flex; flex-direction: column; color: var(--page-text); border: 1px solid rgba(0,0,0,0.08); 
+            backface-visibility: hidden; padding: 45px 35px; box-sizing: border-box; box-shadow: var(--inner-fold-shadow); display: flex; flex-direction: column; color: var(--page-text); border: 1px solid rgba(0,0,0,0.08); 
         }
         .front { border-radius: 2px 15px 15px 2px; transform: translateZ(1px); }
         .back { transform: rotateY(180deg) translateZ(1px); border-radius: 15px 2px 2px 15px; }
@@ -163,18 +163,26 @@
         .embossed-deco { color: rgba(25, 35, 25, 0.95); text-shadow: -1px -1px 0px rgba(255, 255, 255, 0.04), 1px 1px 1px rgba(0, 0, 0, 0.4); display: inline-block; opacity: 0.9; }
 
         .endpaper { background-color: #d1c7b1 !important; filter: sepia(0.2) contrast(1.1); }
-        .content-scroll { flex: 1; overflow-y: auto; padding-right: 5px; scrollbar-width: none; }
+        .content-scroll { flex: 1; overflow-y: auto; padding-right: 5px; scrollbar-width: none; width: 100%; }
         .content-scroll::-webkit-scrollbar { display: none; }
 
         h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-style: italic; margin: 0; line-height: 1.2; z-index: 2; }
-        h2 { font-family: 'Playfair Display', serif; border-bottom: 1px solid rgba(0,0,0,0.15); font-style: italic; font-size: 1.2rem; margin-top: 0; margin-bottom: 12px; }
-        h3 { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; color: #5a6b58; margin-bottom: 8px; }
-        .handwritten { font-family: 'La Belle Aurore', cursive; font-size: 1.15rem; line-height: 1.5; color: #4a5a48; }
-        .drop-cap::first-letter { font-family: 'Playfair Display', serif; font-size: 3.5rem; float: left; line-height: 0.8; padding-right: 8px; color: #5a6b58; }
-        .divider { text-align: center; margin: 15px 0; font-size: 1.2rem; opacity: 0.4; letter-spacing: 5px; }
-        .page-footer { margin-top: 10px; text-align: center; font-size: 0.7rem; font-style: italic; opacity: 0.6; font-weight: bold; }
+        h2 { font-family: 'Playfair Display', serif; border-bottom: 1px solid rgba(0,0,0,0.1); font-style: italic; font-size: 1.1rem; margin-top: 0; margin-bottom: 20px; color: #5a6b58; letter-spacing: 1px; }
+        
+        .handwritten { 
+            font-family: 'La Belle Aurore', cursive; 
+            font-size: 1.35rem; 
+            line-height: 1.6; 
+            color: #3a4738; 
+            text-align: left;
+            margin: 0;
+            white-space: pre-line;
+            opacity: 0.85;
+        }
 
-        /* --- UPDATED ANNIVERSARY TEXT POSITIONING --- */
+        .divider { text-align: center; margin: 15px 0; font-size: 1.2rem; opacity: 0.4; letter-spacing: 5px; }
+        .page-footer { margin-top: 10px; text-align: center; font-size: 0.7rem; font-style: italic; opacity: 0.3; font-weight: bold; }
+
         .desk-reveal { 
             position: absolute; 
             left: 50%;
@@ -185,39 +193,42 @@
             opacity: 0; 
             transition: opacity 1.5s ease; 
             z-index: 1; 
-            width: 380px; 
+            width: 480px; 
         }
         .book.fully-closed-back + .desk-reveal { opacity: 1; }
         
+        .main-anniversary-greeting {
+            color: var(--cover-accent);
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 4.8rem;
+            letter-spacing: -1px;
+            margin: 0;
+            line-height: 1.0;
+        }
+
+        .anniversary-subtitle {
+            color: var(--cover-accent);
+            opacity: 0.7;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+        }
+
         #player { position: absolute; width: 0; height: 0; visibility: hidden; pointer-events: none; }
 
         @media (max-width: 768px) {
             :root {
-                --book-height: 360px; 
-                --book-width: 240px;
+                --book-height: 380px; 
+                --book-width: 260px;
             }
-
             .scene { perspective: 1000px; }
-            .book { transform: rotateZ(-2deg); }
-            .book.open { transform: translateX(42%) rotateZ(0deg); }
-            .book.fully-closed-back { transform: translateX(-20%) rotateZ(2deg); }
-            
-            .front, .back { padding: 20px 15px; }
-            h1 { font-size: 1.6rem; }
-            h2 { font-size: 1.1rem; }
-            .handwritten { font-size: 0.95rem; }
-            
-            .desk-reveal { 
-                left: 50%; 
-                top: 15%; 
-                transform: translateX(-50%); 
-                width: 90%; 
-            }
-            .desk-reveal h1 { font-size: 2.2rem; }
-        }
-
-        @media (max-width: 480px) {
-            .book.open { transform: translateX(38%) rotateZ(0deg); }
+            .front, .back { padding: 30px 20px; }
+            .handwritten { font-size: 1.1rem; }
+            .desk-reveal { left: 50%; top: 15%; transform: translateX(-50%); width: 90%; }
+            .main-anniversary-greeting { font-size: 3.2rem; }
         }
     </style>
 </head>
@@ -246,7 +257,6 @@
                     <div class="ornament-row"><span class="top-l">❧</span><span class="top-r">❧</span></div>
                     <div class="ornament-row"><span class="bot-l">❧</span><span class="bot-r">❧</span></div>
                 </div>
-
                 <div style="margin-top: auto; z-index: 2;">
                     <h1 class="embossed-text">Petrichor</h1>
                     <div class="embossed-deco" style="font-size: 1.1rem; margin: 8px 0 18px 0; letter-spacing: 2px;">· · ─ ·𖥸· ─ · ·</div>
@@ -254,7 +264,6 @@
                         <span class="embossed-deco" style="font-size: 1.4rem; vertical-align: middle; margin-right: 2px;">༺</span> Clara, Whom I Deem My Rain <span class="embossed-deco" style="font-size: 1.4rem; vertical-align: middle; margin-left: 2px;">༻</span>
                     </p>
                 </div>
-
                 <div style="margin-top: auto; margin-bottom: 25px; z-index: 2;">
                     <span class="embossed-deco" style="font-family: 'Playfair Display'; font-size: 0.65rem; letter-spacing: 5px; text-transform: uppercase; opacity: 0.8;">
                         J.A. Martija
@@ -273,35 +282,114 @@
 
         <div class="page">
             <div class="front">
-                <h2>I. Preface</h2>
-                <div class="content-scroll"><p class="drop-cap handwritten">E</p><p class="handwritten">Enter your notes here...</p></div>
+                <h2>I. The Arid Heart</h2>
+                <div class="content-scroll"><p class="handwritten">I did not see you yet,
+                but I felt you in my drought.</p></div>
+                <div class="page-footer">01</div>
             </div>
             <div class="back">
-                <h2>The Registry</h2>
-                <div class="content-scroll">
-                    <p><strong>01</strong> &nbsp; [Memory Title]</p>
-                    <div class="divider">❦</div>
-                    <p><strong>...</strong></p>
-                    <p><strong>12</strong> &nbsp; [Final Memory]</p>
-                </div>
+                <div class="content-scroll"><p class="handwritten">There were many days I longed for rain,
+                but I was left with either storm or drizzle,
+                to be left drowning
+                or left to need all over again.</p></div>
+                <div class="page-footer">02</div>
             </div>
         </div>
 
-        <div class="page"><div class="front"><h3>01</h3><div class="content-scroll"><p class="handwritten">Memory 1...</p></div><div class="page-footer">01</div></div><div class="back"><h3>02</h3><div class="content-scroll"><p class="handwritten">Memory 2...</p></div><div class="page-footer">02</div></div></div>
-        <div class="page"><div class="front"><h3>03</h3><div class="content-scroll"><p class="handwritten">Memory 3...</p></div><div class="page-footer">03</div></div><div class="back"><h3>04</h3><div class="content-scroll"><p class="handwritten">Memory 4...</p></div><div class="page-footer">04</div></div></div>
-        <div class="page"><div class="front"><h3>05</h3><div class="content-scroll"><p class="handwritten">Memory 5...</p></div><div class="page-footer">05</div></div><div class="back"><h3>06</h3><div class="content-scroll"><p class="handwritten">Memory 6...</p></div><div class="page-footer">06</div></div></div>
-        <div class="page"><div class="front"><h3>07</h3><div class="content-scroll"><p class="handwritten">Memory 7...</p></div><div class="page-footer">07</div></div><div class="back"><h3>08</h3><div class="content-scroll"><p class="handwritten">Memory 8...</p></div><div class="page-footer">08</div></div></div>
-        <div class="page"><div class="front"><h3>09</h3><div class="content-scroll"><p class="handwritten">Memory 9...</p></div><div class="page-footer">09</div></div><div class="back"><h3>10</h3><div class="content-scroll"><p class="handwritten">Memory 10...</p></div><div class="page-footer">10</div></div></div>
-        <div class="page"><div class="front"><h3>11</h3><div class="content-scroll"><p class="handwritten">Memory 11...</p></div><div class="page-footer">11</div></div><div class="back"><h3>12</h3><div class="content-scroll"><p class="handwritten">Memory 12...</p></div><div class="page-footer">12</div></div></div>
+        <div class="page">
+            <div class="front">
+                <h2>II. The Scorched Earth</h2>
+                <div class="content-scroll"><p class="handwritten">I was only dirt, unflourishing,
+                to be stepped on or turned to mud.
+
+                My thirst attended to,
+                but never quenched.</p></div>
+                <div class="page-footer">03</div>
+            </div>
+            <div class="back">
+                <div class="content-scroll"><p class="handwritten">The sun was just as unforgiving.
+                How am I to rejoice in the heat of the moment
+                when I have nothing to give to it?</p></div>
+                <div class="page-footer">04</div>
+            </div>
+        </div>
 
         <div class="page">
             <div class="front">
-                <h2>The End</h2>
-                <div class="content-scroll" style="text-align: center;"><p style="margin-top: 50px;">A dedicated space for the end of this registry.</p><p style="font-size: 1.5rem; opacity: 0.3; margin-top: 20px;">❀</p></div>
+                <h2>III. The Nocturnal Mist</h2>
+                <div class="content-scroll"><p class="handwritten">The cool of night, my only company,
+                just before the sun rises.
+
+                Dew forming and the mist enshrouding,
+                coming and going.</p></div>
+                <div class="page-footer">05</div>
+            </div>
+            <div class="back">
+                <div class="content-scroll"><p class="handwritten">I felt you surrounding,
+                but it was not time for it,
+                not yet.
+
+                A cloud rolled over in the distance,
+                and I believe it was you.
+                You came by then and again.</p></div>
+                <div class="page-footer">06</div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="front">
+                <h2>IV. The Approaching Shade</h2>
+                <div class="content-scroll"><p class="handwritten">I never dared to ask myself when,
+                this enjoyment of your shade and your mist,
+                one I wanted to name and miss.</p></div>
+                <div class="page-footer">07</div>
+            </div>
+            <div class="back">
+                <div class="content-scroll"><p class="handwritten">But alas, every moment you passed by,
+                you left me a little less dry.
+
+                I was mist-laced by you,
+                though I began to think you had misplaced this dew.</p></div>
+                <div class="page-footer">08</div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="front">
+                <h2>V. The Grounding</h2>
+                <div class="content-scroll"><p class="handwritten">And then—
+
+                you stayed.</p></div>
+                <div class="page-footer">09</div>
+            </div>
+            <div class="back">
+                <div class="content-scroll"><p class="handwritten">Not as storm,
+                not as absence,
+
+                but as something soft enough to name.</p></div>
+                <div class="page-footer">10</div>
+            </div>
+        </div>
+
+        <div class="page">
+            <div class="front">
+                <h2>VI. The Softened Ground</h2>
+                <div class="content-scroll" style="display:flex; flex-direction:column; justify-content:center; text-align:center;">
+                    <p class="handwritten" style="text-align:center; font-size: 2rem; color: #5a6b58;">Petrichor.</p>
+                </div>
+                <div class="page-footer">11</div>
             </div>
             <div class="back endpaper">
-                <h2>II. Epilogue</h2>
-                <div class="content-scroll"><p class="drop-cap handwritten">W</p><p class="handwritten">Wait for the moon to be full...</p><div class="divider" style="margin-top: 40px;">❧</div></div>
+                <h2>The Settled Dust</h2>
+                <div class="content-scroll">
+                    <p class="handwritten">The earth is soft now.
+                    The drought is a memory.
+                    
+                    Thank you for staying, Clara.
+                    Happy Anniversary.</p>
+                </div>
+                <div class="divider">❦</div>
+                <div class="page-footer">12</div>
             </div>
         </div>
 
@@ -317,8 +405,8 @@
     </div>
     
     <div class="desk-reveal">
-        <h1 style="color: var(--cover-accent); font-family: 'Playfair Display'; font-style: italic;">Happy Anniversary</h1>
-        <p style="color: var(--cover-accent); opacity: 0.7; font-size: 1rem; letter-spacing: 1px; margin-top: 10px; font-family: 'EB Garamond'; font-style: italic;">what we became still lingers, as petrichor does</p>
+        <h1 class="main-anniversary-greeting">Happy Anniversary</h1>
+        <p class="anniversary-subtitle">what we became still lingers, as petrichor does</p>
     </div>
 </div>
 
