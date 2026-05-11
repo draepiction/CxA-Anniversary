@@ -190,17 +190,63 @@
         .anniversary-subtitle { color: var(--cover-accent); opacity: 0.7; font-size: 1rem; letter-spacing: 1px; margin-top: 15px; font-family: 'EB Garamond', serif; font-style: italic; }
         #player { position: absolute; width: 0; height: 0; visibility: hidden; pointer-events: none; }
 
+        /* --- New Static Rain Container --- */
+        #static-rain-overlay {
+            position: absolute;
+            width: calc(var(--book-width) * 2); /* Width of the full open spread */
+            height: var(--book-height);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateZ(-4deg); /* Match initial book tilt */
+            pointer-events: none;
+            z-index: 1001; /* Above the book and standard pages */
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 2s ease, transform var(--speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        /* Update Tilt when book opens */
+        .book.open ~ #static-rain-overlay {
+            transform: translate(calc(-50% + (var(--book-width) / 2)), -50%) rotateZ(0deg);
+        }
+
+        /* CSS for the individual wet drops */
+        .page-drop {
+            position: absolute;
+            background: rgba(100, 90, 80, 0.4); /* Damp color */
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: multiply; /* Wet look */
+            opacity: 0;
+            filter: blur(2px);
+            transform: scale(0.4);
+            transition: transform 1.5s ease-out, opacity 1s ease-out;
+        }
+
+        .page-drop.active {
+            opacity: 0.7;
+            transform: scale(1);
+        }
+
+        .page-drop.fade-out {
+            opacity: 0;
+        }
+
         @media (max-width: 768px) {
             :root { --book-height: 380px; --book-width: 260px; }
             .front, .back { padding: 30px 20px; }
             .handwritten { font-size: 1.1rem; }
             .main-anniversary-greeting { font-size: 3.2rem; }
+            #static-rain-overlay { width: calc(var(--book-width) * 2); height: var(--book-height); }
         }
     </style>
 </head>
 <body>
 
 <div id="player"></div>
+
+<!-- The fixed rain overlay, covers p12 and endpage -->
+<div id="static-rain-overlay"></div>
 
 <div id="rain-entrance" onclick="startExperience()">
     <div class="rain-text">A quiet breath, just for you...</div>
@@ -440,6 +486,40 @@ I made this in the hours I would've spent beside you.
         }
     }
 
+    // --- REFINED UNENDING RAIN LOGIC ---
+    let rainLoop = null;
+    function startRecursiveRain() {
+        const overlay = document.getElementById('static-rain-overlay');
+        overlay.style.opacity = '1';
+
+        function addDrop() {
+            const drop = document.createElement('div');
+            drop.className = 'page-drop';
+            const size = Math.random() * 12 + 10; // 10px to 22px
+            drop.style.width = `${size}px`;
+            drop.style.height = `${size}px`;
+            drop.style.left = `${Math.random() * 95 + 2.5}%`; // Avoid hard edges
+            drop.style.top = `${Math.random() * 95 + 2.5}%`;
+            
+            overlay.appendChild(drop);
+            
+            // Activate soak transition
+            requestAnimationFrame(() => drop.classList.add('active'));
+
+            // Fade and remove
+            setTimeout(() => {
+                drop.classList.add('fade-out');
+                setTimeout(() => drop.remove(), 1000);
+            }, 2500); // Wait 2.5s soak, then fade
+
+            // MORE RAIN: New loop timing is much faster
+            // Recursive call for unending rain
+            rainLoop = setTimeout(addDrop, Math.random() * 150 + 100); // New drop every 100ms - 250ms
+        }
+        
+        addDrop(); // Start loop
+    }
+
     const pages = document.querySelectorAll('.page');
     const book = document.getElementById('book');
     pages.forEach((page, index) => {
@@ -457,6 +537,18 @@ I made this in the hours I would've spent beside you.
             setTimeout(() => {
                 const flippedCount = document.querySelectorAll('.flipped').length;
                 book.classList.toggle('open', flippedCount > 0);
+                
+                // Track if we are on the final spread (P12/P13)
+                if (flippedCount === 7) { // Assuming 8 pages total, index 6 is the trigger
+                    startRecursiveRain();
+                } else if (rainLoop) {
+                    // Turn rain off if we navigate away
+                    clearTimeout(rainLoop);
+                    document.getElementById('static-rain-overlay').style.opacity = '0';
+                    document.getElementById('static-rain-overlay').innerHTML = ''; // Clear drops
+                    rainLoop = null;
+                }
+
                 book.classList.toggle('fully-closed-back', flippedCount === pages.length);
             }, 100);
         });
