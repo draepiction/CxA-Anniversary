@@ -190,33 +190,32 @@
         .anniversary-subtitle { color: var(--cover-accent); opacity: 0.7; font-size: 1rem; letter-spacing: 1px; margin-top: 15px; font-family: 'EB Garamond', serif; font-style: italic; }
         #player { position: absolute; width: 0; height: 0; visibility: hidden; pointer-events: none; }
 
-        /* --- New Static Rain Container --- */
+        /* --- Updated Rain Overlay (Anchored to Book) --- */
         #static-rain-overlay {
             position: absolute;
-            width: calc(var(--book-width) * 2); /* Width of the full open spread */
+            width: calc(var(--book-width) * 2); 
             height: var(--book-height);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateZ(-4deg); /* Match initial book tilt */
+            top: 0;
+            left: 0;
             pointer-events: none;
-            z-index: 1001; /* Above the book and standard pages */
+            z-index: 1001; 
             overflow: hidden;
             opacity: 0;
-            transition: opacity 2s ease, transform var(--speed) cubic-bezier(0.645, 0.045, 0.355, 1);
+            transition: opacity 1s ease;
+            transform: translateZ(100px); /* Keeps rain above page flips */
         }
 
-        /* Update Tilt when book opens */
-        .book.open ~ #static-rain-overlay {
-            transform: translate(calc(-50% + (var(--book-width) / 2)), -50%) rotateZ(0deg);
+        /* Adjust position when book is open/spread */
+        .book.open #static-rain-overlay {
+            left: calc(var(--book-width) * -1);
         }
 
-        /* CSS for the individual wet drops */
         .page-drop {
             position: absolute;
-            background: rgba(100, 90, 80, 0.4); /* Damp color */
+            background: rgba(100, 90, 80, 0.4); 
             border-radius: 50%;
             pointer-events: none;
-            mix-blend-mode: multiply; /* Wet look */
+            mix-blend-mode: multiply; 
             opacity: 0;
             filter: blur(2px);
             transform: scale(0.4);
@@ -226,6 +225,13 @@
         .page-drop.active {
             opacity: 0.7;
             transform: scale(1);
+        }
+
+        /* Fade class for drops when the page is turned */
+        .page-drop.fade-away {
+            opacity: 0 !important;
+            transform: scale(0.5);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
 
         .page-drop.fade-out {
@@ -245,9 +251,6 @@
 
 <div id="player"></div>
 
-<!-- The fixed rain overlay, covers p12 and endpage -->
-<div id="static-rain-overlay"></div>
-
 <div id="rain-entrance" onclick="startExperience()">
     <div class="rain-text">A quiet breath, just for you...</div>
     <p style="color: white; opacity: 0.4; margin-top: 20px; font-size: 0.75rem; letter-spacing: 2px;">( step into the rain.. )</p>
@@ -260,6 +263,8 @@
 
 <div class="scene">
     <div class="book" id="book">
+        <div id="static-rain-overlay"></div>
+
         <div class="page cover">
             <div class="front">
                 <div class="corner-protector cp-top"></div><div class="corner-protector cp-bottom"></div><div class="cover-frame"></div>
@@ -456,7 +461,6 @@ I made this in the hours I would've spent beside you.
         document.getElementById('rain-entrance').classList.add('faded');
         if (player) player.playVideo();
         initDust();
-        setTimeout(() => { document.querySelectorAll('.dust').forEach(d => d.classList.add('visible')); }, 1000);
     }
 
     function createRipple() {
@@ -486,45 +490,62 @@ I made this in the hours I would've spent beside you.
         }
     }
 
-    // --- REFINED UNENDING RAIN LOGIC ---
     let rainLoop = null;
+    let rainDelay = null;
+
     function startRecursiveRain() {
         const overlay = document.getElementById('static-rain-overlay');
         overlay.style.opacity = '1';
 
         function addDrop() {
+            if (!rainLoop) return; 
             const drop = document.createElement('div');
             drop.className = 'page-drop';
-            const size = Math.random() * 12 + 10; // 10px to 22px
+            const size = Math.random() * 12 + 10;
             drop.style.width = `${size}px`;
             drop.style.height = `${size}px`;
-            drop.style.left = `${Math.random() * 95 + 2.5}%`; // Avoid hard edges
+            drop.style.left = `${Math.random() * 95 + 2.5}%`;
             drop.style.top = `${Math.random() * 95 + 2.5}%`;
             
             overlay.appendChild(drop);
-            
-            // Activate soak transition
             requestAnimationFrame(() => drop.classList.add('active'));
 
-            // Fade and remove
             setTimeout(() => {
-                drop.classList.add('fade-out');
-                setTimeout(() => drop.remove(), 1000);
-            }, 2500); // Wait 2.5s soak, then fade
+                if(!drop.classList.contains('fade-away')) {
+                    drop.classList.add('fade-out');
+                    setTimeout(() => drop.remove(), 1000);
+                }
+            }, 2500);
 
-            // MORE RAIN: New loop timing is much faster
-            // Recursive call for unending rain
-            rainLoop = setTimeout(addDrop, Math.random() * 150 + 100); // New drop every 100ms - 250ms
+            rainLoop = setTimeout(addDrop, Math.random() * 150 + 100);
         }
         
-        addDrop(); // Start loop
+        addDrop();
+    }
+
+    // Function to gracefully fade existing drops
+    function sweepDrops() {
+        const overlay = document.getElementById('static-rain-overlay');
+        const existingDrops = overlay.querySelectorAll('.page-drop');
+        existingDrops.forEach(drop => {
+            drop.classList.add('fade-away');
+            setTimeout(() => drop.remove(), 600);
+        });
     }
 
     const pages = document.querySelectorAll('.page');
     const book = document.getElementById('book');
+    const overlay = document.getElementById('static-rain-overlay');
+
     pages.forEach((page, index) => {
         page.style.zIndex = pages.length - index;
         page.addEventListener('click', () => {
+            // GRACEFUL SWEEP instead of instant removal
+            sweepDrops();
+            
+            if (rainLoop) { clearTimeout(rainLoop); rainLoop = null; }
+            if (rainDelay) { clearTimeout(rainDelay); rainDelay = null; }
+
             if (!page.classList.contains('flipped')) {
                 page.classList.add('flipped');
                 page.style.zIndex = 50 + index; 
@@ -534,19 +555,20 @@ I made this in the hours I would've spent beside you.
                 page.style.zIndex = 50 + index;
                 setTimeout(() => { page.style.zIndex = pages.length - index; }, 850);
             }
+
             setTimeout(() => {
                 const flippedCount = document.querySelectorAll('.flipped').length;
                 book.classList.toggle('open', flippedCount > 0);
                 
-                // Track if we are on the final spread (P12/P13)
-                if (flippedCount === 7) { // Assuming 8 pages total, index 6 is the trigger
-                    startRecursiveRain();
-                } else if (rainLoop) {
-                    // Turn rain off if we navigate away
-                    clearTimeout(rainLoop);
-                    document.getElementById('static-rain-overlay').style.opacity = '0';
-                    document.getElementById('static-rain-overlay').innerHTML = ''; // Clear drops
-                    rainLoop = null;
+                const isFinalSpreads = (flippedCount === 7 || flippedCount === 8);
+
+                if (isFinalSpreads) {
+                    rainDelay = setTimeout(() => {
+                        rainLoop = true;
+                        startRecursiveRain();
+                    }, 800); 
+                } else {
+                    overlay.style.opacity = '0';
                 }
 
                 book.classList.toggle('fully-closed-back', flippedCount === pages.length);
